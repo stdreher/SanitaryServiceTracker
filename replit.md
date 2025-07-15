@@ -2,7 +2,7 @@
 
 ## Overview
 
-FieldService Pro is a full-stack web application for managing field service work orders in the sanitary installation industry. The application provides a comprehensive dashboard for fitters to view their assigned work orders, track status, and record technical measurements on-site. Built with a modern React frontend and Express backend, using in-memory storage for fast development and prototyping.
+FieldService Pro is a full-stack web application for managing field service work orders in the sanitary installation industry. The application provides a comprehensive dashboard for fitters to view their assigned work orders, track status, and record technical measurements on-site. Built with a modern React frontend and Express backend, using PostgreSQL database for persistent data storage.
 
 ## User Preferences
 
@@ -42,9 +42,9 @@ The application uses three main entities:
 - **AppHeader**: Navigation header with branding and user info
 
 ### Backend Services
-- **Storage Layer**: Abstracted storage interface with in-memory implementation for development
+- **Storage Layer**: Abstracted storage interface with PostgreSQL database implementation
 - **Route Handlers**: Express routes for work orders, measurements, and statistics
-- **Database Operations**: Drizzle ORM queries for data persistence
+- **Database Operations**: Drizzle ORM queries with Neon serverless PostgreSQL
 
 ## Data Flow
 
@@ -91,6 +91,9 @@ The application follows a traditional full-stack architecture with modern toolin
 ## Recent Changes
 
 ### July 15, 2025
+- **Database integration**: Migrated from in-memory storage to PostgreSQL database with Neon serverless
+- **Database schema**: Created tables for customers, work orders, and measurements with proper relations
+- **Data persistence**: All work orders, measurements, and customer data now stored persistently
 - **Fixed measurement validation error**: Resolved API validation issue where measurement data types weren't matching schema expectations
 - **Enhanced error handling**: Added detailed logging for measurement creation to improve debugging
 - **Updated CSS classes**: Fixed missing Tailwind CSS warning classes by using standard color utilities

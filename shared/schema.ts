@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, decimal, timestamp, boolean } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -54,6 +55,26 @@ export type WorkOrder = typeof workOrders.$inferSelect;
 export type InsertWorkOrder = z.infer<typeof insertWorkOrderSchema>;
 export type Measurement = typeof measurements.$inferSelect;
 export type InsertMeasurement = z.infer<typeof insertMeasurementSchema>;
+
+// Relations
+export const customersRelations = relations(customers, ({ many }) => ({
+  workOrders: many(workOrders),
+}));
+
+export const workOrdersRelations = relations(workOrders, ({ one, many }) => ({
+  customer: one(customers, {
+    fields: [workOrders.customerId],
+    references: [customers.id],
+  }),
+  measurements: many(measurements),
+}));
+
+export const measurementsRelations = relations(measurements, ({ one }) => ({
+  workOrder: one(workOrders, {
+    fields: [measurements.workOrderId],
+    references: [workOrders.id],
+  }),
+}));
 
 export type WorkOrderWithCustomer = WorkOrder & {
   customer: Customer;
