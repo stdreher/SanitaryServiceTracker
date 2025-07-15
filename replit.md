@@ -2,7 +2,7 @@
 
 ## Overview
 
-FieldService Pro is a full-stack web application for managing field service work orders. The application provides a dashboard for viewing work orders, tracking their status, and recording measurements. It's built with a modern React frontend and Express backend, using PostgreSQL for data persistence.
+FieldService Pro is a full-stack web application for managing field service work orders in the sanitary installation industry. The application provides a comprehensive dashboard for fitters to view their assigned work orders, track status, and record technical measurements on-site. Built with a modern React frontend and Express backend, using in-memory storage for fast development and prototyping.
 
 ## User Preferences
 
@@ -87,3 +87,12 @@ The application uses three main entities:
 - **Logging**: Request logging with response times and payloads
 
 The application follows a traditional full-stack architecture with modern tooling, emphasizing type safety, developer experience, and maintainable code structure.
+
+## Recent Changes
+
+### July 15, 2025
+- **Fixed measurement validation error**: Resolved API validation issue where measurement data types weren't matching schema expectations
+- **Enhanced error handling**: Added detailed logging for measurement creation to improve debugging
+- **Updated CSS classes**: Fixed missing Tailwind CSS warning classes by using standard color utilities
+- **TypeScript fixes**: Resolved type compatibility issues in storage layer for work orders and measurements
+- **Application deployment**: Successfully deployed and verified all core functionality is working
