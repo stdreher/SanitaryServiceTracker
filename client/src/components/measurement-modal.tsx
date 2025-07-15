@@ -49,11 +49,11 @@ export function MeasurementModal({ workOrder, isOpen, onClose }: MeasurementModa
   const createMeasurementMutation = useMutation({
     mutationFn: async (data: MeasurementFormData) => {
       const measurementData = {
-        pipeDiameter: data.pipeDiameter ? parseFloat(data.pipeDiameter) : undefined,
-        pipeLength: data.pipeLength ? parseFloat(data.pipeLength) : undefined,
-        waterPressure: data.waterPressure ? parseInt(data.waterPressure) : undefined,
-        installationHeight: data.installationHeight ? parseFloat(data.installationHeight) : undefined,
-        notes: data.notes || undefined,
+        pipeDiameter: data.pipeDiameter || null,
+        pipeLength: data.pipeLength || null,
+        waterPressure: data.waterPressure ? parseInt(data.waterPressure) : null,
+        installationHeight: data.installationHeight || null,
+        notes: data.notes || null,
       };
 
       await apiRequest("POST", `/api/work-orders/${workOrder.id}/measurements`, measurementData);

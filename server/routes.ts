@@ -64,9 +64,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const workOrderId = parseInt(req.params.id);
       
+      // Clean the data to handle undefined/null properly
       const measurementData = {
-        ...req.body,
         workOrderId,
+        pipeDiameter: req.body.pipeDiameter || null,
+        pipeLength: req.body.pipeLength || null,
+        waterPressure: req.body.waterPressure || null,
+        installationHeight: req.body.installationHeight || null,
+        notes: req.body.notes || null,
         recordedAt: new Date().toISOString()
       };
       
@@ -76,8 +81,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(measurement);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Validation error:", error.errors);
+        console.error("Request body:", req.body);
         return res.status(400).json({ message: "Invalid measurement data", errors: error.errors });
       }
+      console.error("Error creating measurement:", error);
       res.status(500).json({ message: "Failed to create measurement" });
     }
   });
