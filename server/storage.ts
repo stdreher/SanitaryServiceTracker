@@ -1,4 +1,6 @@
 import { customers, workOrders, measurements, type Customer, type InsertCustomer, type WorkOrder, type InsertWorkOrder, type Measurement, type InsertMeasurement, type WorkOrderWithCustomer } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Customer operations
@@ -270,4 +272,112 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// DatabaseStorage implementation
+export class DatabaseStorage implements IStorage {
+  async getCustomer(id: number): Promise<Customer | undefined> {
+    const [customer] = await db.select().from(customers).where(eq(customers.id, id));
+    return customer || undefined;
+  }
+
+  async createCustomer(customer: InsertCustomer): Promise<Customer> {
+    const [newCustomer] = await db
+      .insert(customers)
+      .values(customer)
+      .returning();
+    return newCustomer;
+  }
+
+  async getWorkOrders(): Promise<WorkOrderWithCustomer[]> {
+    const workOrdersWithCustomers = await db.query.workOrders.findMany({
+      with: {
+        customer: true,
+        measurements: true,
+      },
+    });
+    return workOrdersWithCustomers;
+  }
+
+  async getWorkOrder(id: number): Promise<WorkOrderWithCustomer | undefined> {
+    const workOrder = await db.query.workOrders.findFirst({
+      where: eq(workOrders.id, id),
+      with: {
+        customer: true,
+        measurements: true,
+      },
+    });
+    return workOrder || undefined;
+  }
+
+  async getWorkOrderByNumber(orderNumber: string): Promise<WorkOrderWithCustomer | undefined> {
+    const workOrder = await db.query.workOrders.findFirst({
+      where: eq(workOrders.orderNumber, orderNumber),
+      with: {
+        customer: true,
+        measurements: true,
+      },
+    });
+    return workOrder || undefined;
+  }
+
+  async createWorkOrder(workOrder: InsertWorkOrder): Promise<WorkOrder> {
+    const [newWorkOrder] = await db
+      .insert(workOrders)
+      .values(workOrder)
+      .returning();
+    return newWorkOrder;
+  }
+
+  async updateWorkOrder(id: number, updates: Partial<WorkOrder>): Promise<WorkOrder | undefined> {
+    const [updatedWorkOrder] = await db
+      .update(workOrders)
+      .set(updates)
+      .where(eq(workOrders.id, id))
+      .returning();
+    return updatedWorkOrder || undefined;
+  }
+
+  async getMeasurements(workOrderId: number): Promise<Measurement[]> {
+    const measurementsList = await db
+      .select()
+      .from(measurements)
+      .where(eq(measurements.workOrderId, workOrderId));
+    return measurementsList;
+  }
+
+  async createMeasurement(measurement: InsertMeasurement): Promise<Measurement> {
+    const [newMeasurement] = await db
+      .insert(measurements)
+      .values(measurement)
+      .returning();
+    return newMeasurement;
+  }
+
+  async updateMeasurement(id: number, updates: Partial<Measurement>): Promise<Measurement | undefined> {
+    const [updatedMeasurement] = await db
+      .update(measurements)
+      .set(updates)
+      .where(eq(measurements.id, id))
+      .returning();
+    return updatedMeasurement || undefined;
+  }
+
+  async getWorkOrderStats(): Promise<{
+    total: number;
+    pending: number;
+    inProgress: number;
+    completed: number;
+    onHold: number;
+  }> {
+    const allWorkOrders = await db.select().from(workOrders);
+    
+    return {
+      total: allWorkOrders.length,
+      pending: allWorkOrders.filter(wo => wo.status === "pending").length,
+      inProgress: allWorkOrders.filter(wo => wo.status === "in-progress").length,
+      completed: allWorkOrders.filter(wo => wo.status === "completed").length,
+      onHold: allWorkOrders.filter(wo => wo.status === "on-hold").length,
+    };
+  }
+}
+
+export const storage = new DatabaseStorage();
