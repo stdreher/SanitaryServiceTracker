@@ -6,7 +6,7 @@ async function seedDatabase() {
     console.log("Seeding database...");
 
     // Create customers
-    const [customer1, customer2, customer3] = await db
+    const [customer1, customer2, customer3, customer4, customer5, customer6, customer7, customer8] = await db
       .insert(customers)
       .values([
         {
@@ -32,6 +32,46 @@ async function seedDatabase() {
           city: "Manhattan",
           state: "NY",
           zipCode: "10012"
+        },
+        {
+          name: "Robert Wilson",
+          phone: "+1 (555) 234-5678",
+          address: "321 Elm Street",
+          city: "Queens",
+          state: "NY",
+          zipCode: "11354"
+        },
+        {
+          name: "Lisa Chen",
+          phone: "+1 (555) 345-6789",
+          address: "654 Maple Drive",
+          city: "Bronx",
+          state: "NY",
+          zipCode: "10451"
+        },
+        {
+          name: "David Martinez",
+          phone: "+1 (555) 567-8901",
+          address: "987 Cedar Lane",
+          city: "Staten Island",
+          state: "NY",
+          zipCode: "10301"
+        },
+        {
+          name: "Amanda Taylor",
+          phone: "+1 (555) 678-9012",
+          address: "147 Birch Avenue",
+          city: "Long Island City",
+          state: "NY",
+          zipCode: "11101"
+        },
+        {
+          name: "James Anderson",
+          phone: "+1 (555) 789-0123",
+          address: "258 Willow Street",
+          city: "Flushing",
+          state: "NY",
+          zipCode: "11355"
         }
       ])
       .returning();
@@ -72,6 +112,61 @@ async function seedDatabase() {
           scheduledTime: "15:30",
           estimatedHours: "1.5",
           assignedTo: "John Smith"
+        },
+        {
+          orderNumber: "WO-2024-004",
+          customerId: customer4.id,
+          title: "Water Heater Installation",
+          description: "Install new 40-gallon water heater in utility room",
+          status: "pending",
+          scheduledDate: "2024-01-17",
+          scheduledTime: "09:00",
+          estimatedHours: "4.0",
+          assignedTo: "Mike Johnson"
+        },
+        {
+          orderNumber: "WO-2024-005",
+          customerId: customer5.id,
+          title: "Toilet Installation",
+          description: "Replace old toilet with new dual-flush model",
+          status: "in-progress",
+          scheduledDate: "2024-01-15",
+          scheduledTime: "11:00",
+          estimatedHours: "2.5",
+          assignedTo: "Sarah Williams"
+        },
+        {
+          orderNumber: "WO-2024-006",
+          customerId: customer6.id,
+          title: "Drain Cleaning",
+          description: "Clear blockage in main kitchen drain line",
+          status: "on-hold",
+          scheduledDate: "2024-01-18",
+          scheduledTime: "13:00",
+          estimatedHours: "1.0",
+          assignedTo: "John Smith"
+        },
+        {
+          orderNumber: "WO-2024-007",
+          customerId: customer7.id,
+          title: "Shower Installation",
+          description: "Install new walk-in shower with glass doors",
+          status: "pending",
+          scheduledDate: "2024-01-19",
+          scheduledTime: "08:30",
+          estimatedHours: "5.0",
+          assignedTo: "Mike Johnson"
+        },
+        {
+          orderNumber: "WO-2024-008",
+          customerId: customer8.id,
+          title: "Garbage Disposal Repair",
+          description: "Fix jammed garbage disposal unit",
+          status: "completed",
+          scheduledDate: "2024-01-13",
+          scheduledTime: "16:00",
+          estimatedHours: "1.0",
+          assignedTo: "Sarah Williams"
         }
       ]);
 
