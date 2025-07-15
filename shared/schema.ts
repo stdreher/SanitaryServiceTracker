@@ -29,10 +29,10 @@ export const workOrders = pgTable("work_orders", {
 export const measurements = pgTable("measurements", {
   id: serial("id").primaryKey(),
   workOrderId: integer("work_order_id").notNull(),
-  pipeDiameter: decimal("pipe_diameter", { precision: 4, scale: 2 }),
-  pipeLength: decimal("pipe_length", { precision: 5, scale: 2 }),
+  pipeDiameter: decimal("pipe_diameter", { precision: 8, scale: 2 }),
+  pipeLength: decimal("pipe_length", { precision: 10, scale: 2 }),
   waterPressure: integer("water_pressure"),
-  installationHeight: decimal("installation_height", { precision: 5, scale: 2 }),
+  installationHeight: decimal("installation_height", { precision: 8, scale: 2 }),
   notes: text("notes"),
   recordedAt: text("recorded_at").notNull(),
 });
