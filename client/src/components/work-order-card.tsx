@@ -8,9 +8,10 @@ import type { WorkOrderWithCustomer } from "@shared/schema";
 interface WorkOrderCardProps {
   workOrder: WorkOrderWithCustomer;
   onMeasurementClick: (workOrder: WorkOrderWithCustomer) => void;
+  onDetailsClick: (workOrder: WorkOrderWithCustomer) => void;
 }
 
-export function WorkOrderCard({ workOrder, onMeasurementClick }: WorkOrderCardProps) {
+export function WorkOrderCard({ workOrder, onMeasurementClick, onDetailsClick }: WorkOrderCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -99,7 +100,7 @@ export function WorkOrderCard({ workOrder, onMeasurementClick }: WorkOrderCardPr
                 View Report
               </Button>
             )}
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="outline" onClick={() => onDetailsClick(workOrder)}>
               <Eye className="h-4 w-4 mr-2" />
               View Details
             </Button>

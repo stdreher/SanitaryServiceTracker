@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/app-header";
 import { StatusSummary } from "@/components/status-summary";
 import { WorkOrderCard } from "@/components/work-order-card";
 import { MeasurementModal } from "@/components/measurement-modal";
+import { WorkOrderDetailsModal } from "@/components/work-order-details-modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +15,7 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrderWithCustomer | null>(null);
+  const [detailsWorkOrder, setDetailsWorkOrder] = useState<WorkOrderWithCustomer | null>(null);
 
   const { data: workOrders = [], isLoading: isLoadingOrders } = useQuery({
     queryKey: ["/api/work-orders"],
@@ -36,6 +38,10 @@ export default function Dashboard() {
 
   const handleMeasurementClick = (workOrder: WorkOrderWithCustomer) => {
     setSelectedWorkOrder(workOrder);
+  };
+
+  const handleDetailsClick = (workOrder: WorkOrderWithCustomer) => {
+    setDetailsWorkOrder(workOrder);
   };
 
   if (isLoadingOrders) {
@@ -99,6 +105,7 @@ export default function Dashboard() {
               key={workOrder.id}
               workOrder={workOrder}
               onMeasurementClick={handleMeasurementClick}
+              onDetailsClick={handleDetailsClick}
             />
           ))}
           
@@ -116,6 +123,15 @@ export default function Dashboard() {
           workOrder={selectedWorkOrder}
           isOpen={!!selectedWorkOrder}
           onClose={() => setSelectedWorkOrder(null)}
+        />
+      )}
+
+      {/* Work Order Details Modal */}
+      {detailsWorkOrder && (
+        <WorkOrderDetailsModal
+          workOrder={detailsWorkOrder}
+          isOpen={!!detailsWorkOrder}
+          onClose={() => setDetailsWorkOrder(null)}
         />
       )}
 
