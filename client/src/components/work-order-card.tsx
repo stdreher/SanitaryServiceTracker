@@ -9,9 +9,10 @@ interface WorkOrderCardProps {
   workOrder: WorkOrderWithCustomer;
   onMeasurementClick: (workOrder: WorkOrderWithCustomer) => void;
   onDetailsClick: (workOrder: WorkOrderWithCustomer) => void;
+  onStartWork: (workOrder: WorkOrderWithCustomer) => void;
 }
 
-export function WorkOrderCard({ workOrder, onMeasurementClick, onDetailsClick }: WorkOrderCardProps) {
+export function WorkOrderCard({ workOrder, onMeasurementClick, onDetailsClick, onStartWork }: WorkOrderCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -83,7 +84,7 @@ export function WorkOrderCard({ workOrder, onMeasurementClick, onDetailsClick }:
           </div>
           <div className="flex items-center space-x-2">
             {workOrder.status === "pending" && (
-              <Button size="sm" className="bg-primary hover:bg-primary/90">
+              <Button size="sm" onClick={() => onStartWork(workOrder)} className="bg-primary hover:bg-primary/90">
                 <Play className="h-4 w-4 mr-2" />
                 Start Work
               </Button>
