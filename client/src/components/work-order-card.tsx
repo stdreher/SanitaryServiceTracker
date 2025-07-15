@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, Phone, MapPin, Calendar, Clock, Edit, Eye, Play, FileText } from "lucide-react";
+import { User, Phone, MapPin, Calendar, Clock, Edit, Eye, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WorkOrderWithCustomer } from "@shared/schema";
 
@@ -95,12 +95,7 @@ export function WorkOrderCard({ workOrder, onMeasurementClick, onDetailsClick, o
                 Record Measurements
               </Button>
             )}
-            {workOrder.status === "completed" && (
-              <Button size="sm" variant="outline">
-                <FileText className="h-4 w-4 mr-2" />
-                View Report
-              </Button>
-            )}
+
             <Button size="sm" variant="outline" onClick={() => onDetailsClick(workOrder)}>
               <Eye className="h-4 w-4 mr-2" />
               View Details
