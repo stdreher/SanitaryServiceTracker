@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppHeader } from "@/components/app-header";
 import { StatusSummary } from "@/components/status-summary";
 import { WorkOrderCard } from "@/components/work-order-card";
@@ -8,6 +8,8 @@ import { WorkOrderDetailsModal } from "@/components/work-order-details-modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Search, Filter } from "lucide-react";
 import type { WorkOrderWithCustomer } from "@shared/schema";
 
@@ -16,6 +18,9 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrderWithCustomer | null>(null);
   const [detailsWorkOrder, setDetailsWorkOrder] = useState<WorkOrderWithCustomer | null>(null);
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: workOrders = [], isLoading: isLoadingOrders } = useQuery({
     queryKey: ["/api/work-orders"],
@@ -42,6 +47,31 @@ export default function Dashboard() {
 
   const handleDetailsClick = (workOrder: WorkOrderWithCustomer) => {
     setDetailsWorkOrder(workOrder);
+  };
+
+  const startWorkMutation = useMutation({
+    mutationFn: async (workOrder: WorkOrderWithCustomer) => {
+      await apiRequest("PATCH", `/api/work-orders/${workOrder.id}`, { status: "in-progress" });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Work Started",
+        description: "Work order status updated to In Progress",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/work-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/work-orders/stats/summary"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to start work order",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStartWork = (workOrder: WorkOrderWithCustomer) => {
+    startWorkMutation.mutate(workOrder);
   };
 
   if (isLoadingOrders) {
@@ -106,6 +136,7 @@ export default function Dashboard() {
               workOrder={workOrder}
               onMeasurementClick={handleMeasurementClick}
               onDetailsClick={handleDetailsClick}
+              onStartWork={handleStartWork}
             />
           ))}
           
