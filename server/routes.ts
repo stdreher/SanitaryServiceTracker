@@ -99,6 +99,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete customer
+  app.delete("/api/customers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const result = await storage.deleteCustomer(id);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      
+      res.json({
+        message: "Customer deleted successfully",
+        deletedCustomer: result.deletedCustomer,
+        deletedWorkOrders: result.deletedWorkOrders,
+        deletedMeasurements: result.deletedMeasurements
+      });
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      res.status(500).json({ message: "Failed to delete customer" });
+    }
+  });
+
   // Create measurement for work order
   app.post("/api/work-orders/:id/measurements", async (req, res) => {
     try {

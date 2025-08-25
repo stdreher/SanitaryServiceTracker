@@ -7,6 +7,7 @@ export interface IStorage {
   getAllCustomers(): Promise<Customer[]>;
   getCustomer(id: number): Promise<Customer | undefined>;
   createCustomer(customer: InsertCustomer): Promise<Customer>;
+  deleteCustomer(id: number): Promise<{ deletedCustomer: Customer; deletedWorkOrders: number; deletedMeasurements: number } | undefined>;
   
   // Work order operations
   getWorkOrders(): Promise<WorkOrderWithCustomer[]>;
@@ -148,6 +149,46 @@ export class MemStorage implements IStorage {
     const newCustomer: Customer = { ...customer, id };
     this.customers.set(id, newCustomer);
     return newCustomer;
+  }
+
+  async deleteCustomer(id: number): Promise<{ deletedCustomer: Customer; deletedWorkOrders: number; deletedMeasurements: number } | undefined> {
+    const customer = this.customers.get(id);
+    if (!customer) return undefined;
+
+    // Find and delete measurements for work orders belonging to this customer
+    let deletedMeasurements = 0;
+    const customerWorkOrderIds = Array.from(this.workOrders.values())
+      .filter(wo => wo.customerId === id)
+      .map(wo => wo.id);
+
+    for (const workOrderId of customerWorkOrderIds) {
+      const measurementsToDelete = Array.from(this.measurements.entries())
+        .filter(([, measurement]) => measurement.workOrderId === workOrderId);
+      
+      for (const [measurementId] of measurementsToDelete) {
+        this.measurements.delete(measurementId);
+        deletedMeasurements++;
+      }
+    }
+
+    // Delete work orders for this customer
+    let deletedWorkOrders = 0;
+    const workOrdersToDelete = Array.from(this.workOrders.entries())
+      .filter(([, workOrder]) => workOrder.customerId === id);
+    
+    for (const [workOrderId] of workOrdersToDelete) {
+      this.workOrders.delete(workOrderId);
+      deletedWorkOrders++;
+    }
+
+    // Delete customer
+    this.customers.delete(id);
+
+    return {
+      deletedCustomer: customer,
+      deletedWorkOrders,
+      deletedMeasurements
+    };
   }
 
   async getWorkOrders(): Promise<WorkOrderWithCustomer[]> {
@@ -295,6 +336,47 @@ export class DatabaseStorage implements IStorage {
       .values(customer)
       .returning();
     return newCustomer;
+  }
+
+  async deleteCustomer(id: number): Promise<{ deletedCustomer: Customer; deletedWorkOrders: number; deletedMeasurements: number } | undefined> {
+    // Get customer to verify it exists
+    const customer = await this.getCustomer(id);
+    if (!customer) return undefined;
+
+    // Get all work orders for this customer
+    const customerWorkOrders = await db
+      .select()
+      .from(workOrders)
+      .where(eq(workOrders.customerId, id));
+
+    let deletedMeasurements = 0;
+    
+    // Delete measurements for each work order
+    for (const workOrder of customerWorkOrders) {
+      const deletedMeasurementsResult = await db
+        .delete(measurements)
+        .where(eq(measurements.workOrderId, workOrder.id))
+        .returning();
+      deletedMeasurements += deletedMeasurementsResult.length;
+    }
+
+    // Delete work orders
+    const deletedWorkOrdersResult = await db
+      .delete(workOrders)
+      .where(eq(workOrders.customerId, id))
+      .returning();
+
+    // Delete customer
+    const [deletedCustomer] = await db
+      .delete(customers)
+      .where(eq(customers.id, id))
+      .returning();
+
+    return {
+      deletedCustomer,
+      deletedWorkOrders: deletedWorkOrdersResult.length,
+      deletedMeasurements
+    };
   }
 
   async getWorkOrders(): Promise<WorkOrderWithCustomer[]> {
