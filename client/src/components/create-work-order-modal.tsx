@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,34 +9,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Plus, UserPlus, Calendar, MapPin, FileText } from "lucide-react";
+import { Plus, User, Calendar, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Customer } from "@shared/schema";
 
 const createWorkOrderSchema = z.object({
-  // Customer selection
-  customerId: z.string().optional(),
-  newCustomer: z.object({
-    name: z.string().min(1, "Customer name is required"),
-    phone: z.string().min(1, "Phone number is required"),
-    address: z.string().min(1, "Address is required"),
-    city: z.string().min(1, "City is required"),
-    state: z.string().min(1, "State is required"),
-    zipCode: z.string().min(1, "ZIP code is required"),
-  }).optional(),
-  
-  // Work order details
+  customerId: z.string().min(1, "Customer selection is required"),
   title: z.string().min(1, "Job title is required"),
   description: z.string().min(1, "Description is required"),
-  
-  // Schedule
   scheduledDate: z.string().min(1, "Scheduled date is required"),
   scheduledTime: z.string().min(1, "Scheduled time is required"),
   estimatedHours: z.string().min(1, "Estimated hours is required"),
-  
-  // Assignment
   assignedTo: z.string().min(1, "Assigned technician is required"),
 });
 
@@ -49,7 +32,6 @@ interface CreateWorkOrderModalProps {
 }
 
 export function CreateWorkOrderModal({ isOpen, onClose }: CreateWorkOrderModalProps) {
-  const [customerMode, setCustomerMode] = useState<"existing" | "new">("existing");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -62,14 +44,6 @@ export function CreateWorkOrderModal({ isOpen, onClose }: CreateWorkOrderModalPr
     resolver: zodResolver(createWorkOrderSchema),
     defaultValues: {
       customerId: "",
-      newCustomer: {
-        name: "",
-        phone: "",
-        address: "",
-        city: "",
-        state: "",
-        zipCode: "",
-      },
       title: "",
       description: "",
       scheduledDate: "",
@@ -79,7 +53,6 @@ export function CreateWorkOrderModal({ isOpen, onClose }: CreateWorkOrderModalPr
     },
   });
 
-  // Generate unique order number
   const generateOrderNumber = () => {
     const year = new Date().getFullYear();
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -88,19 +61,8 @@ export function CreateWorkOrderModal({ isOpen, onClose }: CreateWorkOrderModalPr
 
   const createWorkOrderMutation = useMutation({
     mutationFn: async (data: CreateWorkOrderFormData) => {
-      let customerId: number;
+      const customerId = parseInt(data.customerId);
 
-      // Handle customer creation or selection
-      if (customerMode === "new" && data.newCustomer) {
-        const customer = await apiRequest("POST", "/api/customers", data.newCustomer) as unknown as Customer;
-        customerId = customer.id;
-      } else if (data.customerId) {
-        customerId = parseInt(data.customerId);
-      } else {
-        throw new Error("Customer selection is required");
-      }
-
-      // Create work order
       const workOrderData = {
         orderNumber: generateOrderNumber(),
         customerId,
@@ -142,7 +104,6 @@ export function CreateWorkOrderModal({ isOpen, onClose }: CreateWorkOrderModalPr
 
   const handleClose = () => {
     form.reset();
-    setCustomerMode("existing");
     onClose();
   };
 
@@ -162,135 +123,35 @@ export function CreateWorkOrderModal({ isOpen, onClose }: CreateWorkOrderModalPr
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Customer Information
+                  <User className="h-4 w-4" />
+                  Customer Selection
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-4">
-                  <Button
-                    type="button"
-                    variant={customerMode === "existing" ? "default" : "outline"}
-                    onClick={() => setCustomerMode("existing")}
-                  >
-                    Select Existing Customer
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={customerMode === "new" ? "default" : "outline"}
-                    onClick={() => setCustomerMode("new")}
-                  >
-                    Create New Customer
-                  </Button>
-                </div>
-
-                {customerMode === "existing" ? (
-                  <FormField
-                    control={form.control}
-                    name="customerId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Select Customer</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choose a customer" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {(customers as Customer[]).map((customer: Customer) => (
-                              <SelectItem key={customer.id} value={customer.id.toString()}>
-                                {customer.name} - {customer.phone}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="newCustomer.name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Customer Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter customer name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="newCustomer.phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter phone number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="newCustomer.address"
-                      render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel>Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter street address" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="newCustomer.city"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>City</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter city" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="newCustomer.state"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>State</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter state" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="newCustomer.zipCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>ZIP Code</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter ZIP code" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="customerId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select Customer</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a customer" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {(customers as Customer[]).map((customer: Customer) => (
+                            <SelectItem key={customer.id} value={customer.id.toString()}>
+                              {customer.name} - {customer.phone}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
             </Card>
 

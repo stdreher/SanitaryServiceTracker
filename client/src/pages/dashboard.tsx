@@ -6,12 +6,13 @@ import { WorkOrderCard } from "@/components/work-order-card";
 import { MeasurementModal } from "@/components/measurement-modal";
 import { WorkOrderDetailsModal } from "@/components/work-order-details-modal";
 import { CreateWorkOrderModal } from "@/components/create-work-order-modal";
+import { CreateCustomerModal } from "@/components/create-customer-modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Search, Filter, Plus } from "lucide-react";
+import { Search, Filter, Plus, UserPlus } from "lucide-react";
 import type { WorkOrderWithCustomer } from "@shared/schema";
 
 export default function Dashboard() {
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrderWithCustomer | null>(null);
   const [detailsWorkOrder, setDetailsWorkOrder] = useState<WorkOrderWithCustomer | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreateCustomerModalOpen, setIsCreateCustomerModalOpen] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -100,6 +102,10 @@ export default function Dashboard() {
               <p className="text-muted-foreground mt-1">Manage your assigned installations and repairs</p>
             </div>
             <div className="flex items-center space-x-2">
+              <Button onClick={() => setIsCreateCustomerModalOpen(true)} variant="outline" className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />
+                Create Customer
+              </Button>
               <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
                 Create Work Order
@@ -176,6 +182,11 @@ export default function Dashboard() {
       <CreateWorkOrderModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+      />
+
+      <CreateCustomerModal
+        isOpen={isCreateCustomerModalOpen}
+        onClose={() => setIsCreateCustomerModalOpen(false)}
       />
 
       {/* Bottom Navigation for Mobile */}
