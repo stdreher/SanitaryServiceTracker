@@ -5,12 +5,13 @@ import { StatusSummary } from "@/components/status-summary";
 import { WorkOrderCard } from "@/components/work-order-card";
 import { MeasurementModal } from "@/components/measurement-modal";
 import { WorkOrderDetailsModal } from "@/components/work-order-details-modal";
+import { CreateWorkOrderModal } from "@/components/create-work-order-modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Plus } from "lucide-react";
 import type { WorkOrderWithCustomer } from "@shared/schema";
 
 export default function Dashboard() {
@@ -18,6 +19,7 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrderWithCustomer | null>(null);
   const [detailsWorkOrder, setDetailsWorkOrder] = useState<WorkOrderWithCustomer | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -30,7 +32,7 @@ export default function Dashboard() {
     queryKey: ["/api/work-orders/stats/summary"],
   });
 
-  const filteredWorkOrders = workOrders.filter((order: WorkOrderWithCustomer) => {
+  const filteredWorkOrders = (workOrders as WorkOrderWithCustomer[]).filter((order: WorkOrderWithCustomer) => {
     const matchesSearch = 
       order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -98,6 +100,10 @@ export default function Dashboard() {
               <p className="text-muted-foreground mt-1">Manage your assigned installations and repairs</p>
             </div>
             <div className="flex items-center space-x-2">
+              <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Create Work Order
+              </Button>
               <div className="relative">
                 <Input
                   type="text"
@@ -126,7 +132,7 @@ export default function Dashboard() {
         </div>
 
         {/* Status Summary */}
-        <StatusSummary stats={stats} />
+        <StatusSummary stats={stats as any} />
 
         {/* Work Orders List */}
         <div className="space-y-4">
@@ -165,6 +171,12 @@ export default function Dashboard() {
           onClose={() => setDetailsWorkOrder(null)}
         />
       )}
+
+      {/* Create Work Order Modal */}
+      <CreateWorkOrderModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
 
       {/* Bottom Navigation for Mobile */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border sm:hidden">

@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Customer operations
+  getAllCustomers(): Promise<Customer[]>;
   getCustomer(id: number): Promise<Customer | undefined>;
   createCustomer(customer: InsertCustomer): Promise<Customer>;
   
@@ -132,6 +133,10 @@ export class MemStorage implements IStorage {
     };
     this.workOrders.set(id, newWorkOrder);
     return newWorkOrder;
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    return Array.from(this.customers.values());
   }
 
   async getCustomer(id: number): Promise<Customer | undefined> {
@@ -274,6 +279,11 @@ export class MemStorage implements IStorage {
 
 // DatabaseStorage implementation
 export class DatabaseStorage implements IStorage {
+  async getAllCustomers(): Promise<Customer[]> {
+    const customersList = await db.select().from(customers);
+    return customersList;
+  }
+
   async getCustomer(id: number): Promise<Customer | undefined> {
     const [customer] = await db.select().from(customers).where(eq(customers.id, id));
     return customer || undefined;
